@@ -1,0 +1,31 @@
+---
+Name: app-marketdata
+---
+# Data sources are bound to interfaces here. To switch to another provider, point
+# the interface at a different class; the importers and pages don't change.
+SilverStripe\Core\Injector\Injector:
+  GuzzleHttp\ClientInterface:
+    class: GuzzleHttp\Client
+  App\MarketData\QuoteProvider:
+    class: App\MarketData\NasdaqScreenerQuoteProvider
+    constructor:
+      - '%$GuzzleHttp\ClientInterface'
+  App\MarketData\EarningsCalendarProvider:
+    class: App\MarketData\NasdaqEarningsCalendarProvider
+    constructor:
+      - '%$GuzzleHttp\ClientInterface'
+  App\MarketData\SecClient:
+    constructor:
+      - '%$GuzzleHttp\ClientInterface'
+  App\MarketData\QuoteImporter:
+    constructor:
+      - '%$App\MarketData\QuoteProvider'
+  App\MarketData\SecCompanyImporter:
+    constructor:
+      - '%$App\MarketData\SecClient'
+  App\MarketData\EarningsImporter:
+    constructor:
+      - '%$App\MarketData\EarningsCalendarProvider'
+
+App\MarketData\QuoteImporter:
+  max_market_cap: 1000000000

@@ -1,0 +1,37 @@
+---
+Name: app-queuedjobs
+After: '#queuedjobsettings'
+---
+# Recurring jobs reschedule themselves when they finish (see App\Jobs\SchedulesNextRun).
+# These entries are a safety net: if a job is missing from the queue, it is recreated.
+SilverStripe\Core\Injector\Injector:
+  Symbiote\QueuedJobs\Services\QueuedJobService:
+    properties:
+      defaultJobs:
+        UpdateQuotes:
+          type: 'App\Jobs\UpdateQuotesJob'
+          filter:
+            JobTitle: 'Update quotes and movers'
+          construct:
+            - []
+          startDateFormat: 'Y-m-d H:i:s'
+          startTimeString: 'now'
+          recreate: 1
+        ImportSecCompanyData:
+          type: 'App\Jobs\ImportSecCompanyDataJob'
+          filter:
+            JobTitle: 'Import SEC company data'
+          construct:
+            - []
+          startDateFormat: 'Y-m-d H:i:s'
+          startTimeString: 'tomorrow 02:00'
+          recreate: 1
+        ImportEarningsCalendar:
+          type: 'App\Jobs\ImportEarningsCalendarJob'
+          filter:
+            JobTitle: 'Import earnings calendar'
+          construct:
+            - []
+          startDateFormat: 'Y-m-d H:i:s'
+          startTimeString: 'tomorrow 03:00'
+          recreate: 1

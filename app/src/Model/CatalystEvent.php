@@ -14,6 +14,7 @@ use SilverStripe\ORM\DataObject;
  * @property string $Title
  * @property string $Details
  * @property string $SourceUrl
+ * @property string $SourceName
  * @property int $StockID
  * @method Stock Stock()
  */
@@ -38,6 +39,8 @@ class CatalystEvent extends DataObject
         'Title' => 'Varchar(255)',
         'Details' => 'Text',
         'SourceUrl' => 'Varchar(500)',
+        // Which importer created the event; empty for events entered in the CMS
+        'SourceName' => 'Varchar(100)',
     ];
 
     private static array $has_one = [

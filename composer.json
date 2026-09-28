@@ -12,7 +12,8 @@
         "silverstripe/login-forms": "~6.2.0@stable",
         "silverstripe/htmleditor-tinymce": "~1.1.0@stable",
         "silverstripe/sqlite3": "^4",
-        "guzzlehttp/guzzle": "^7.9"
+        "guzzlehttp/guzzle": "^7.9",
+        "symbiote/silverstripe-queuedjobs": "^6"
     },
     "require-dev": {
         "phpunit/phpunit": "^11.3"

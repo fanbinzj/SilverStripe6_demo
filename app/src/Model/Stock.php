@@ -40,6 +40,7 @@ use SilverStripe\ORM\HasManyList;
  * @property string $Auditor
  * @property string $Industry
  * @property string $LastImportedAt
+ * @property string $SecDataImportedAt
  * @method HasManyList<Filing> Filings()
  * @method HasManyList<ReverseSplit> ReverseSplits()
  * @method HasManyList<NameChange> NameChanges()
@@ -91,6 +92,7 @@ class Stock extends DataObject
         'Industry' => 'Varchar(255)',
 
         'LastImportedAt' => 'Datetime',
+        'SecDataImportedAt' => 'Datetime',
     ];
 
     private static array $has_many = [
@@ -169,7 +171,7 @@ class Stock extends DataObject
                 HeaderField::create('FundamentalsNote', 'An empty "as of" date means the value is unknown', 4),
                 'LastPrice'
             );
-            $fields->makeFieldReadonly('LastImportedAt');
+            $fields->makeFieldReadonly(['LastImportedAt', 'SecDataImportedAt']);
         });
 
         return parent::getCMSFields();
