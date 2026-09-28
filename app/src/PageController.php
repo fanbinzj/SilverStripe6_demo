@@ -2,6 +2,7 @@
 
 namespace {
 
+    use App\Pages\StockDirectoryPage;
     use SilverStripe\CMS\Controllers\ContentController;
     use SilverStripe\View\Requirements;
 
@@ -34,6 +35,22 @@ namespace {
             // You can include any CSS or JS required by your project here.
             // See: https://docs.silverstripe.org/en/developer_guides/templates/requirements/
             Requirements::css('app/client/css/app.css');
+        }
+
+        /**
+         * Target page for the ticker search form (templates/Includes/TickerSearchForm.ss).
+         */
+        public function getSearchPage(): ?StockDirectoryPage
+        {
+            return StockDirectoryPage::get()->first();
+        }
+
+        /**
+         * Current search term, so the search box keeps its value on the results page.
+         */
+        public function getSearchQuery(): string
+        {
+            return trim((string) $this->getRequest()->getVar('q'));
         }
     }
 }
