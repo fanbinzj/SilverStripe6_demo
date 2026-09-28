@@ -35,6 +35,7 @@ Requirements: PHP 8.3+, Composer 2 (SQLite is used for local development).
 composer install
 cp .env.example .env
 vendor/bin/sake db:build --flush
+vendor/bin/sake tasks:setup-site-structure   # create pages and settings
 composer serve        # http://localhost:8080, CMS at /admin
 ```
 
@@ -45,7 +46,7 @@ Each stage focuses on one area of the framework and has accompanying notes in [`
 | Stage | Topic | Notes |
 |---|---|---|
 | 0 | Setup, project structure, request lifecycle | [docs/00](docs/00-setup-and-structure.md) |
-| 1 | Site structure: page types, templates, navigation, SiteConfig | TODO |
+| 1 | Site structure: page types, templates, navigation, SiteConfig | [docs/01](docs/01-site-structure.md) |
 | 2 | Data model: DataObjects, relations, ModelAdmin | TODO |
 | 3 | Stock profiles and search: routing, controllers, forms | TODO |
 | 4 | Data import: SEC EDGAR, Injector-based providers, build tasks, queued jobs | TODO |
