@@ -36,6 +36,7 @@ Requirements: PHP 8.3+, Composer 2 (SQLite is used for local development).
 composer install
 cp .env.example .env
 vendor/bin/sake db:build --flush
+sqlite3 database/pennymirror.sqlite "PRAGMA journal_mode=WAL;"   # lets the site and imports use the DB at once
 vendor/bin/sake tasks:setup-site-structure   # create pages and settings
 vendor/bin/sake tasks:import-sec-company-list # import NASDAQ/NYSE stocks from the SEC
 vendor/bin/sake tasks:update-quotes           # prices, market caps, movers; marks stocks in scope
