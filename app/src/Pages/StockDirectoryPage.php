@@ -22,6 +22,19 @@ class StockDirectoryPage extends Page
 
     private static array $allowed_children = [];
 
+    /**
+     * The single stock directory page, cached for the request since Stock::Link() calls this
+     * for every stock in a list.
+     */
+    public static function get_instance(): ?static
+    {
+        static $instance = false;
+        if ($instance === false) {
+            $instance = static::get()->first();
+        }
+        return $instance;
+    }
+
     public function canCreate($member = null, $context = [])
     {
         // Only one stock directory makes sense
