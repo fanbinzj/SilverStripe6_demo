@@ -1,0 +1,9 @@
+/.graphql-generated/
+/public/_graphql/
+/silverstripe-cache/
+/.env
+/vendor/
+/themes/startup-theme/
+/_resources/
+/public/_resources/
+/database/
