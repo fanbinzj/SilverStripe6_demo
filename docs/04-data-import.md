@@ -148,11 +148,15 @@ Cron in production:
 - **Short transactions**: SQLite allows one writer at a time. During development a 16-second import transaction
   made the SEC job fail with `database is locked`. MySQL locks rows rather than the whole database, but long
   transactions block other writers there too. Keep them short, and don't run two writing processes against SQLite.
-- **SQLite WAL mode**: in SQLite's default journal mode, readers and a writer can also block each other, and the
-  SEC job crashed a second time while the site was being browsed. Write-ahead logging lets reads and a write happen
-  at the same time. It is a one-off setting stored in the database file:
-  `sqlite3 database/pennymirror.sqlite "PRAGMA journal_mode=WAL;"`. After switching, the job kept running while
-  the site was under load.
+- **SQLite WAL mode was not enough**: in SQLite's default journal mode, readers and a writer also block each
+  other, and the job crashed again while the site was being browsed. Switching to write-ahead logging
+  (`PRAGMA journal_mode=WAL`) let reads and a write happen together, but the job crashed a third time when the site
+  wrote too (CMS login sessions are written on every request). SQLite allows one writer at a time; a deferred
+  transaction that has already read data fails immediately rather than waiting if another connection wrote since.
+- **The fix was the right database**: local development moved to MariaDB, which locks rows instead of the whole
+  database. Only `.env` changed. With the SEC job running, a CMS login, page views, a form submission and a
+  34-second import transaction all ran alongside it without errors. Lesson: once a background worker and the
+  website write at the same time, use the kind of database production uses.
 - **Fetch before you delete**: `EarningsImporter` fetches every date first and only then replaces events inside a
   transaction, so a failed request leaves the existing data intact.
 
@@ -188,7 +192,8 @@ Cron in production:
    It still runs validation, `onBeforeWrite`/`onAfterWrite` and extension hooks before deciding there is nothing
    to save.
 4. **What causes "database is locked" on SQLite, and what is the general lesson?**
-   Two connections writing at once; long transactions block other writers on any database.
+   Two connections writing at once (SQLite has a single writer). Long transactions block other writers on any
+   database, and development should use the same kind of database as production once there is concurrency.
 5. **What is the N+1 query problem and how does `eagerLoad()` fix it?**
    One query for the list plus one per row for a relation; `eagerLoad()` fetches the related records in one query.
 6. **Why store an "as of" time that describes the data rather than when it was fetched?**

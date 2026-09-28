@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f0f6b5ae9c42644eaa5db997a353385c",
+    "content-hash": "cfd50786defb1a361771f7332fe32270",
     "packages": [
         {
             "name": "asyncphp/doorman",
@@ -3648,59 +3648,6 @@
                 "source": "https://github.com/silverstripe/silverstripe-siteconfig/tree/6.1.1"
             },
             "time": "2025-11-05T05:34:10+00:00"
-        },
-        {
-            "name": "silverstripe/sqlite3",
-            "version": "4.0.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/silverstripe/silverstripe-sqlite3.git",
-                "reference": "cb559adea17362828799ea0307759c438a9ed345"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/silverstripe/silverstripe-sqlite3/zipball/cb559adea17362828799ea0307759c438a9ed345",
-                "reference": "cb559adea17362828799ea0307759c438a9ed345",
-                "shasum": ""
-            },
-            "require": {
-                "silverstripe/framework": "^6",
-                "silverstripe/vendor-plugin": "^3"
-            },
-            "require-dev": {
-                "php": "^8.3",
-                "phpunit/phpunit": "^11.3",
-                "silverstripe/versioned": "^3",
-                "squizlabs/php_codesniffer": "^3.7"
-            },
-            "type": "silverstripe-vendormodule",
-            "autoload": {
-                "psr-4": {
-                    "SilverStripe\\SQLite\\": "code/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "authors": [
-                {
-                    "name": "Ingo Schommer",
-                    "email": "ingo@silverstripe.com"
-                },
-                {
-                    "name": "Sean Harvey",
-                    "email": "sean@silverstripe.com"
-                }
-            ],
-            "description": "Adds SQLite3 support to SilverStripe",
-            "keywords": [
-                "database",
-                "silverstripe",
-                "sqlite3"
-            ],
-            "support": {
-                "issues": "https://github.com/silverstripe/silverstripe-sqlite3/issues",
-                "source": "https://github.com/silverstripe/silverstripe-sqlite3/tree/4.0.1"
-            },
-            "time": "2026-04-24T13:48:11+00:00"
         },
         {
             "name": "silverstripe/startup-theme",
