@@ -30,13 +30,12 @@ This is an early prototype. It shows publicly available information only (no rat
 
 ## Quick start
 
-Requirements: PHP 8.3+, Composer 2 (SQLite is used for local development).
+Requirements: PHP 8.3+, Composer 2, MySQL 8 or MariaDB 10.6+.
 
 ```bash
 composer install
-cp .env.example .env
+cp .env.example .env                           # then set the database password
 vendor/bin/sake db:build --flush
-sqlite3 database/pennymirror.sqlite "PRAGMA journal_mode=WAL;"   # lets the site and imports use the DB at once
 vendor/bin/sake tasks:setup-site-structure   # create pages and settings
 vendor/bin/sake tasks:import-sec-company-list # import NASDAQ/NYSE stocks from the SEC
 vendor/bin/sake tasks:update-quotes           # prices, market caps, movers; marks stocks in scope

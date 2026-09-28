@@ -7,12 +7,24 @@
 | PHP | 8.5 (Homebrew); Silverstripe CMS 6 requires `^8.3` |
 | Composer | 2.x |
 | Silverstripe | `silverstripe/installer` 6.2.0 (recipe-cms 6.2) |
-| Database | SQLite (`silverstripe/sqlite3` ^4), stored at `database/pennymirror.sqlite` |
+| Database | MariaDB (Homebrew), accessed with the `MySQLDatabase` driver |
 | Web server | PHP built-in server + `dev/router.php` |
 
-> Real-world team projects usually run **MySQL/MariaDB on DDEV (Docker)**. SQLite is used here only to keep
-> local setup lightweight. The ORM makes this transparent to application code: Silverstripe supports multiple
-> databases through the `DB` abstraction layer plus database adapter modules.
+> The project started on SQLite to keep setup light, and moved to MariaDB in stage 4 once background jobs and the
+> website needed to write at the same time (see [docs/04](04-data-import.md#7-performance-lessons-from-this-stage)).
+> No application code changed: only `.env`. The ORM makes the database transparent to application code through
+> the `DB` abstraction layer and database adapter modules.
+>
+> Local MariaDB setup:
+>
+> ```bash
+> brew install mariadb && brew services start mariadb
+> mariadb -e "CREATE DATABASE pennymirror CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+>   CREATE USER 'pennymirror'@'localhost' IDENTIFIED BY '<password>';
+>   GRANT ALL PRIVILEGES ON pennymirror.* TO 'pennymirror'@'localhost';
+>   GRANT ALL PRIVILEGES ON \`ss_tmpdb%\`.* TO 'pennymirror'@'localhost';  -- temporary test databases
+>   GRANT CREATE ON *.* TO 'pennymirror'@'localhost';"
+> ```
 
 ## 2. Everyday commands
 
