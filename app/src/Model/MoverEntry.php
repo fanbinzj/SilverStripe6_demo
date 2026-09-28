@@ -58,6 +58,16 @@ class MoverEntry extends DataObject
         ],
     ];
 
+    public function getPriceNice(): string
+    {
+        return '$' . number_format((float) $this->Price, $this->Price < 1 ? 4 : 2);
+    }
+
+    public function getChangePercentNice(): string
+    {
+        return sprintf('%+.2f%%', $this->ChangePercent);
+    }
+
     public function getMarketSession(): MarketSession
     {
         return MarketSession::from($this->Session);
