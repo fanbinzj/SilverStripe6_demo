@@ -2,10 +2,14 @@
 
 namespace App\Pages;
 
+use App\Model\MarketSession;
+use App\Model\MoverEntry;
 use Page;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\TextareaField;
 use SilverStripe\Forms\TextField;
+use SilverStripe\Model\ArrayData;
+use SilverStripe\ORM\FieldType\DBField;
 
 /**
  * @property string $HeroTitle
@@ -24,6 +28,9 @@ class HomePage extends Page
         'HeroIntro' => 'Text',
     ];
 
+    // Gainers and losers shown on the home page
+    private static int $movers_limit = 5;
+
     public function getCMSFields()
     {
         $this->beforeUpdateCMSFields(function (FieldList $fields) {
@@ -34,5 +41,26 @@ class HomePage extends Page
         });
 
         return parent::getCMSFields();
+    }
+
+    /**
+     * Top market-hours gainers and losers for the latest trading day, or null if there are none yet.
+     */
+    public function getTodaysMovers(): ?ArrayData
+    {
+        $session = MarketSession::Regular;
+        $tradingDate = MoverEntry::latestTradingDate($session);
+        if (!$tradingDate) {
+            return null;
+        }
+
+        $limit = static::config()->get('movers_limit');
+        return ArrayData::create([
+            'SessionTitle' => $session->label(),
+            'TradingDate' => DBField::create_field('Date', $tradingDate),
+            'Gainers' => MoverEntry::gainers($session, $tradingDate, $limit),
+            'Losers' => MoverEntry::losers($session, $tradingDate, $limit),
+            'MoversPage' => MoversPage::get()->first(),
+        ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Model;
 
+use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 
 /**
@@ -57,6 +58,53 @@ class MoverEntry extends DataObject
             'filter' => 'ExactMatchFilter',
         ],
     ];
+
+    /**
+     * The most recent trading day that has movers for this session, or null if none yet.
+     */
+    public static function latestTradingDate(MarketSession $session): ?string
+    {
+        return static::get()->filter('Session', $session->value)->max('TradingDate') ?: null;
+    }
+
+    /**
+     * When the movers for a session and day were last rebuilt.
+     */
+    public static function updatedAt(MarketSession $session, string $tradingDate): ?string
+    {
+        return static::get()
+            ->filter(['Session' => $session->value, 'TradingDate' => $tradingDate])
+            ->max('Created') ?: null;
+    }
+
+    /**
+     * @return DataList<MoverEntry>
+     */
+    public static function gainers(MarketSession $session, string $tradingDate, int $limit): DataList
+    {
+        return static::topMoves($session, $tradingDate, $limit)->filter('ChangePercent:GreaterThan', 0);
+    }
+
+    /**
+     * @return DataList<MoverEntry>
+     */
+    public static function losers(MarketSession $session, string $tradingDate, int $limit): DataList
+    {
+        return static::topMoves($session, $tradingDate, $limit)->filter('ChangePercent:LessThan', 0);
+    }
+
+    /**
+     * @return DataList<MoverEntry>
+     */
+    private static function topMoves(MarketSession $session, string $tradingDate, int $limit): DataList
+    {
+        return static::get()
+            ->filter(['Session' => $session->value, 'TradingDate' => $tradingDate])
+            ->sort('Rank')
+            ->limit($limit)
+            // Load all the stocks in one query instead of one query per row (N+1)
+            ->eagerLoad('Stock');
+    }
 
     public function getPriceNice(): string
     {
