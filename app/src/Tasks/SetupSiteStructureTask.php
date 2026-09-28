@@ -13,6 +13,7 @@ use App\Pages\StockDirectoryPage;
 use Page;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\ErrorPage\ErrorPage;
 use SilverStripe\PolyExecution\PolyOutput;
 use SilverStripe\SiteConfig\SiteConfig;
 use Symfony\Component\Console\Command\Command;
@@ -73,6 +74,7 @@ class SetupSiteStructureTask extends BuildTask
         ]);
 
         $this->setUpSiteConfig($disclaimer, $output);
+        $this->moveErrorPagesToEnd(++$sort, $output);
 
         return Command::SUCCESS;
     }
@@ -142,6 +144,22 @@ class SetupSiteStructureTask extends BuildTask
         foreach ($defaults as $page) {
             $page->doArchive();
             $output->writeln("Archived default page: {$page->Title}");
+        }
+    }
+
+    /**
+     * Error pages are created on install with low sort values; keep them below our pages in the site tree.
+     */
+    private function moveErrorPagesToEnd(int $sort, PolyOutput $output): void
+    {
+        foreach (ErrorPage::get()->sort('ErrorCode') as $page) {
+            if ($page->Sort >= $sort) {
+                continue;
+            }
+            $page->Sort = $sort++;
+            $page->write();
+            $page->publishSingle();
+            $output->writeln("Moved error page to the end: {$page->Title}");
         }
     }
 
