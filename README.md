@@ -49,7 +49,7 @@ Each stage focuses on one area of the framework and has accompanying notes in [`
 | 0 | Setup, project structure, request lifecycle | [docs/00](docs/00-setup-and-structure.md) |
 | 1 | Site structure: page types, templates, navigation, SiteConfig | [docs/01](docs/01-site-structure.md) |
 | 2 | Data model: DataObjects, relations, ModelAdmin | [docs/02](docs/02-data-model.md) |
-| 3 | Stock profiles and search: routing, controllers, forms | TODO |
+| 3 | Stock profiles and search: routing, controllers, forms | [docs/03](docs/03-stock-profiles-and-search.md) |
 | 4 | Data import: SEC EDGAR, Injector-based providers, build tasks, queued jobs | TODO |
 | 5 | Members area: permissions and Extensions | TODO |
 | 6 | Front-end: Vue 3 ticker search, accessibility | TODO |

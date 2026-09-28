@@ -3,6 +3,7 @@
 namespace App\Admin;
 
 use App\Model\CatalystEvent;
+use App\Model\DataIssueReport;
 use App\Model\Filing;
 use App\Model\MoverEntry;
 use App\Model\Stock;
@@ -24,6 +25,7 @@ class MarketDataAdmin extends ModelAdmin
         Filing::class,
         CatalystEvent::class,
         MoverEntry::class,
+        DataIssueReport::class,
     ];
 
     private static $page_length = 50;
