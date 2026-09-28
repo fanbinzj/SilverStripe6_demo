@@ -360,3 +360,20 @@
     padding: 0 0.4rem;
     margin-right: 0.4rem;
 }
+
+/* Home movers */
+.home-movers {
+    margin-bottom: 2.5rem;
+}
+
+.home-movers__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+}
+
+.home-movers__more {
+    font-weight: 600;
+}

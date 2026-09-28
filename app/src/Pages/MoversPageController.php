@@ -8,7 +8,6 @@ use App\Model\MoverEntry;
 use PageController;
 use SilverStripe\Model\ArrayData;
 use SilverStripe\Model\List\ArrayList;
-use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\FieldType\DBField;
 
 /**
@@ -73,8 +72,7 @@ class MoversPageController extends PageController
             ]));
         }
 
-        $entries = MoverEntry::get()->filter('Session', $current->value);
-        $tradingDate = $entries->max('TradingDate');
+        $tradingDate = MoverEntry::latestTradingDate($current);
         $limit = max(1, (int) $this->data()->RowLimit);
 
         return [
@@ -83,27 +81,11 @@ class MoversPageController extends PageController
             'SessionHours' => $current->hours(),
             'HasDataSource' => $this->quoteProvider->supportsSession($current),
             'SourceName' => $this->quoteProvider->getSourceName(),
-            // max() returns plain strings; wrap them as DB fields so templates can use .Nice
+            // Plain strings from the database; wrap them as DB fields so templates can use .Nice
             'TradingDate' => DBField::create_field('Date', $tradingDate),
-            'UpdatedAt' => DBField::create_field(
-                'Datetime',
-                $tradingDate ? $entries->filter('TradingDate', $tradingDate)->max('Created') : null
-            ),
-            'Gainers' => $this->moversList($entries, $tradingDate, 'ChangePercent:GreaterThan', $limit),
-            'Losers' => $this->moversList($entries, $tradingDate, 'ChangePercent:LessThan', $limit),
+            'UpdatedAt' => DBField::create_field('Datetime', $tradingDate ? MoverEntry::updatedAt($current, $tradingDate) : null),
+            'Gainers' => $tradingDate ? MoverEntry::gainers($current, $tradingDate, $limit) : null,
+            'Losers' => $tradingDate ? MoverEntry::losers($current, $tradingDate, $limit) : null,
         ];
-    }
-
-    /**
-     * @return DataList<MoverEntry>
-     */
-    private function moversList(DataList $entries, ?string $tradingDate, string $filter, int $limit): DataList
-    {
-        return $entries
-            ->filter(['TradingDate' => $tradingDate, $filter => 0])
-            ->sort('Rank')
-            ->limit($limit)
-            // Load all the stocks in one query instead of one query per row (N+1)
-            ->eagerLoad('Stock');
     }
 }

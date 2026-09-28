@@ -7,6 +7,22 @@
 
     $Content
 
+    <% with $TodaysMovers %>
+        <section class="home-movers" aria-labelledby="home-movers-heading">
+            <div class="home-movers__header">
+                <h2 id="home-movers-heading">Today's movers</h2>
+                <p class="movers__meta">$SessionTitle, {$TradingDate.Nice}. Prices may be delayed.</p>
+            </div>
+            <div class="movers__tables">
+                <% include MoversTable Movers=$Gainers, Caption="Top gainers" %>
+                <% include MoversTable Movers=$Losers, Caption="Top losers" %>
+            </div>
+            <% if $MoversPage %>
+                <p><a href="$MoversPage.Link" class="home-movers__more">See the full movers list</a></p>
+            <% end_if %>
+        </section>
+    <% end_with %>
+
     <section aria-labelledby="sections-heading">
         <h2 id="sections-heading">Explore</h2>
         <ul class="section-grid">

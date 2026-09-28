@@ -160,6 +160,9 @@ Cron in production:
 - `GroupedList::create($events)` + `<% loop $EventsByDate.GroupedBy('EventDate') %>` groups calendar events by day;
   each group's items are in `$Children`.
 - Filter links read `?form=` / `?type=` and compare them against a whitelist; raw input never reaches a query.
+- The home page and the movers page both show movers. The queries live on the model
+  (`MoverEntry::latestTradingDate()`, `gainers()`, `losers()`) so both pages use the same rules, instead of
+  each controller building its own query.
 
 ## 9. Try it yourself
 
