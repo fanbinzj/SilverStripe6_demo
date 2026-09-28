@@ -4,6 +4,12 @@ After: '#queuedjobsettings'
 ---
 # Recurring jobs reschedule themselves when they finish (see App\Jobs\SchedulesNextRun).
 # These entries are a safety net: if a job is missing from the queue, it is recreated.
+Symbiote\QueuedJobs\Services\QueuedJobService:
+  # Pause a job and let the next worker run resume it once memory passes this, instead of
+  # hitting PHP's memory_limit (128M on the CLI here) and crashing. The default is 256M,
+  # which is above PHP's limit, so the check never triggered.
+  memory_limit: 100663296 # 96M
+
 SilverStripe\Core\Injector\Injector:
   Symbiote\QueuedJobs\Services\QueuedJobService:
     properties:

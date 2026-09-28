@@ -51,7 +51,10 @@ class Filing extends DataObject
     ];
 
     private static array $indexes = [
-        'AccessionNumber' => ['type' => 'unique'],
+        // A filing can belong to more than one stock: several share classes under one CIK,
+        // or a filing made jointly by more than one company. Unique per stock, not globally.
+        'StockAccession' => ['type' => 'unique', 'columns' => ['StockID', 'AccessionNumber']],
+        'AccessionNumber' => true,
         'FormType' => true,
         'FiledDate' => true,
     ];
