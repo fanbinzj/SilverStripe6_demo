@@ -85,6 +85,14 @@ class Filing extends DataObject
         return in_array($this->FormType, self::DILUTION_FORMS, true);
     }
 
+    public function getOfferingPriceNice(): string
+    {
+        if (!$this->ExtractedAt || !$this->OfferingPrice) {
+            return '';
+        }
+        return '$' . number_format((float) $this->OfferingPrice, $this->OfferingPrice < 1 ? 4 : 2);
+    }
+
     /**
      * Link to the filing document on EDGAR.
      */

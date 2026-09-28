@@ -2,9 +2,12 @@
 
 namespace App\Model;
 
+use App\Pages\StockDirectoryPage;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\HeaderField;
+use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\HasManyList;
 
 /**
@@ -42,6 +45,7 @@ use SilverStripe\ORM\HasManyList;
  * @method HasManyList<NameChange> NameChanges()
  * @method HasManyList<CatalystEvent> CatalystEvents()
  * @method HasManyList<MoverEntry> MoverEntries()
+ * @method HasManyList<DataIssueReport> DataIssueReports()
  */
 class Stock extends DataObject
 {
@@ -95,6 +99,7 @@ class Stock extends DataObject
         'NameChanges' => NameChange::class,
         'CatalystEvents' => CatalystEvent::class,
         'MoverEntries' => MoverEntry::class,
+        'DataIssueReports' => DataIssueReport::class,
     ];
 
     // Deleting a stock deletes its related records
@@ -104,6 +109,7 @@ class Stock extends DataObject
         'NameChanges',
         'CatalystEvents',
         'MoverEntries',
+        'DataIssueReports',
     ];
 
     private static array $indexes = [
@@ -167,6 +173,63 @@ class Stock extends DataObject
         });
 
         return parent::getCMSFields();
+    }
+
+    /**
+     * Profile page URL: /stocks/TICKER
+     */
+    public function Link(?string $action = null): string
+    {
+        $directory = StockDirectoryPage::get_instance();
+        return $directory ? $directory->Link(rawurlencode($this->Ticker) . ($action ? "/{$action}" : '')) : '';
+    }
+
+    /**
+     * @return DataList<Filing>
+     */
+    public function getDilutionFilings(): DataList
+    {
+        return $this->Filings()->filter('FormType', Filing::DILUTION_FORMS);
+    }
+
+    /**
+     * @return DataList<CatalystEvent>
+     */
+    public function getUpcomingCatalysts(): DataList
+    {
+        return $this->CatalystEvents()->filter('EventDate:GreaterThanOrEqual', date('Y-m-d', DBDatetime::now()->getTimestamp()));
+    }
+
+    /**
+     * @return DataList<CatalystEvent>
+     */
+    public function getUpcomingLockupExpiries(): DataList
+    {
+        return $this->getUpcomingCatalysts()->filter('Type', 'LockupExpiry');
+    }
+
+    public function getLastPriceNice(): string
+    {
+        if (!$this->PriceAsOf) {
+            return '';
+        }
+        // Sub-dollar prices need more decimal places to be meaningful
+        return '$' . number_format((float) $this->LastPrice, $this->LastPrice < 1 ? 4 : 2);
+    }
+
+    public function getCashNice(): string
+    {
+        return $this->CashAsOf ? self::formatCompactUsd($this->Cash) : '';
+    }
+
+    public function getOperatingCashFlowNice(): string
+    {
+        return $this->OperatingCashFlowAsOf ? self::formatCompactUsd($this->OperatingCashFlow3M) : '';
+    }
+
+    public function getPublicFloatNice(): string
+    {
+        return $this->PublicFloatAsOf ? self::formatCompactUsd($this->PublicFloat) : '';
     }
 
     /**
