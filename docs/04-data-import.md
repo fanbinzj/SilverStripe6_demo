@@ -28,7 +28,7 @@ Jobs (run on a queue): UpdateQuotesJob (15 min) | ImportSecCompanyDataJob (night
 
 ```bash
 vendor/bin/sake tasks:update-quotes                         # ~7s; marks ~2,750 stocks in scope
-vendor/bin/sake tasks:import-sec-company-data --limit=20    # full run: ~45 min
+vendor/bin/sake tasks:import-sec-company-data --limit=20    # full run as a queued job: ~45 min
 vendor/bin/sake tasks:import-sec-company-data --ticker=ABEO
 vendor/bin/sake tasks:import-earnings-calendar
 vendor/bin/sake tasks:ProcessJobQueueTask                   # run due queued jobs (normally from cron)
@@ -122,9 +122,12 @@ single cron command:
   under "Jobs".
 - **A worker** runs due jobs: `sake tasks:ProcessJobQueueTask` from cron every minute.
 - **Queues**: `QUEUED` for normal jobs, `LARGE` for long ones (the SEC import) so they don't delay quick jobs.
-- **Steps and resuming**: `ImportSecCompanyDataJob::setup()` stores the list of stock IDs and `totalSteps`; each
-  `process()` call handles one stock and increments `currentStep`. Job properties (`$this->stockIDs`) are saved to
-  the database between steps. When the job crashed at step 139 during development, it resumed from step 139.
+- **Steps and resuming**: `ImportSecCompanyDataJob::setup()` splits the in-scope stocks into batches of 25 and
+  sets `totalSteps`; each `process()` call imports one batch and increments `currentStep`. Job properties
+  (`$this->batches`) are saved to the database between steps, so a job that stops resumes from the next batch.
+- **Memory guard**: after each step the service compares memory use with `QueuedJobService.memory_limit`. If it is
+  too high, the job is paused and the next worker run resumes it in a fresh process. The default (256M) was above
+  PHP's CLI `memory_limit` (128M), so PHP crashed first; it is now 96M.
 - **Recurring jobs**: each job queues its next run in `afterComplete()` (`SchedulesNextRun` trait).
   `defaultJobs` in `app/_config/queuedjobs.yml` is the safety net: if a job disappears, the queue recreates it.
 - **Deduplication**: `queueJob()` won't add a job whose signature (class + data) is already waiting.
@@ -157,6 +160,17 @@ Cron in production:
   database. Only `.env` changed. With the SEC job running, a CMS login, page views, a form submission and a
   34-second import transaction all ran alongside it without errors. Lesson: once a background worker and the
   website write at the same time, use the kind of database production uses.
+- **A memory leak in a dependency**: the first full SEC run died at step 710 with "Allowed memory size exhausted".
+  Running the job's `process()` directly in a loop kept memory flat at 19 MB, but the real worker grew ~0.75 MB per
+  step, which pointed at the queue service rather than our code. In queuedjobs 6.2.2,
+  `QueuedJobService::addJobHandlersToLogger()` runs on every step and checks for an existing `QueuedJobHandler`, but
+  what it adds is a `BufferHandler` wrapping one, so the check never matches and a new handler is added each step.
+  Editing `vendor/` is not an option (it is overwritten on install) and the method is private, so the job now
+  processes 25 stocks per step (111 steps instead of 2,756) and the memory guard above is set below PHP's limit.
+  The full run then completed in one worker run: 2,756 stocks, 0 failures. Worth reporting upstream.
+- **Uniqueness follows the domain**: the same accession number can belong to two stocks (share classes under one
+  CIK, or a filing made jointly by two companies), which broke a unique index on `AccessionNumber`. The index is
+  now unique on (`StockID`, `AccessionNumber`).
 - **Fetch before you delete**: `EarningsImporter` fetches every date first and only then replaces events inside a
   transaction, so a failed request leaves the existing data intact.
 
@@ -196,5 +210,8 @@ Cron in production:
    database, and development should use the same kind of database as production once there is concurrency.
 5. **What is the N+1 query problem and how does `eagerLoad()` fix it?**
    One query for the list plus one per row for a relation; `eagerLoad()` fetches the related records in one query.
-6. **Why store an "as of" time that describes the data rather than when it was fetched?**
+6. **A job crashes with "memory exhausted" after hundreds of steps. How do you find the cause?**
+   Measure memory per step in and outside the worker to see which layer grows, then read that layer's code. Here
+   it was a log handler added on every step by the queue module.
+7. **Why store an "as of" time that describes the data rather than when it was fetched?**
    Because users read it as the time the price applied; a fetch time can be days later than the data.
