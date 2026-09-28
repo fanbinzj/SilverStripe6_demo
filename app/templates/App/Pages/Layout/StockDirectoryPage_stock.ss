@@ -132,7 +132,7 @@
             <ul>
                 <% loop $UpcomingCatalysts %>
                     <li>
-                        <strong>$EventDate.Nice</strong><% if not $IsDateConfirmed %> (estimated)<% end_if %>:
+                        <strong>$EventDate.Nice</strong><% if not $IsDateConfirmed %> (unconfirmed)<% end_if %>:
                         $TypeLabel<% if $Title %>, $Title<% end_if %>
                     </li>
                 <% end_loop %>
@@ -142,8 +142,8 @@
         <% end_if %>
     </section>
 
-    <p class="stock-profile__source">Source: SEC EDGAR and public market data. Information only, not financial advice.
-        Always check the original filings.</p>
+    <p class="stock-profile__source">Company data: SEC EDGAR<% if $SecDataImportedAt %> (updated $SecDataImportedAt.Date)<% end_if %>.
+        Prices: Nasdaq.com, may be delayed. Information only, not financial advice. Always check the original filings.</p>
 </article>
 <% end_with %>
 
