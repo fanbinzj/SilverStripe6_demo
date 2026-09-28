@@ -1,0 +1,11 @@
+---
+Name: mytheme
+---
+SilverStripe\View\SSViewer:
+  themes:
+    - '$public'
+    # Project templates (app/templates) take priority over the theme's,
+    # so we can override theme templates without editing the theme.
+    - '/app'
+    - 'startup-theme'
+    - '$default'
