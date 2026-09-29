@@ -134,11 +134,19 @@ single cron command:
 - **Locking**: a job's `Worker` column acts as a mutex so two workers can't run it at once; stalled jobs are
   detected by the health check once their lock expires.
 
+Running jobs locally: `dev/run-job-queue.sh` processes both queues (the large one in the background). On macOS a
+launchd agent can call it every minute:
+
+```xml
+<!-- ~/Library/LaunchAgents/com.pennymirror.jobqueue.plist (load with: launchctl bootstrap gui/$(id -u) <file>) -->
+<key>ProgramArguments</key><array><string>/path/to/project/dev/run-job-queue.sh</string></array>
+<key>StartInterval</key><integer>60</integer>
+```
+
 Cron in production:
 
 ```
-* * * * * cd /var/www/pennymirror && vendor/bin/sake tasks:ProcessJobQueueTask
-* * * * * cd /var/www/pennymirror && vendor/bin/sake tasks:ProcessJobQueueTask --queue=large
+* * * * * /var/www/pennymirror/dev/run-job-queue.sh
 ```
 
 ## 7. Performance lessons from this stage

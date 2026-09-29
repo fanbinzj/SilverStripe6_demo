@@ -2,6 +2,7 @@
 
 namespace App\Tasks;
 
+use App\Pages\AccountPage;
 use App\Pages\CatalystCalendarPage;
 use App\Pages\DilutionTrackerPage;
 use App\Pages\GuideHolder;
@@ -9,6 +10,7 @@ use App\Pages\GuidePage;
 use App\Pages\HomePage;
 use App\Pages\MoversArchivePage;
 use App\Pages\MoversPage;
+use App\Pages\RegistrationPage;
 use App\Pages\StockDirectoryPage;
 use Page;
 use SilverStripe\CMS\Model\SiteTree;
@@ -56,7 +58,7 @@ class SetupSiteStructureTask extends BuildTask
         ]);
         $this->page(MoversArchivePage::class, 'movers-archive', 'Movers Archive', ++$sort, $output, [
             'MetaDescription' => 'Movers lists from previous trading days.',
-            'Content' => '<p>Previous days\' movers lists.</p>',
+            'Content' => '<p>Previous trading days\' movers lists, by session.</p>',
         ]);
 
         $guides = $this->page(GuideHolder::class, 'penny-stock-101', 'Penny Stock 101', ++$sort, $output, [
@@ -67,6 +69,15 @@ class SetupSiteStructureTask extends BuildTask
 
         $this->page(StockDirectoryPage::class, 'stocks', 'Stocks', ++$sort, $output, [
             'ShowInMenus' => false,
+        ]);
+        $this->page(RegistrationPage::class, 'register', 'Register', ++$sort, $output, [
+            'ShowInMenus' => false,
+            'Content' => '<p>A free account lets you keep a watchlist of stocks.</p>',
+        ]);
+        $this->page(AccountPage::class, 'account', 'My watchlist', ++$sort, $output, [
+            'ShowInMenus' => false,
+            // Personal pages shouldn't be indexed or listed in search results
+            'ShowInSearch' => false,
         ]);
         $disclaimer = $this->page(Page::class, 'disclaimer', 'Disclaimer', ++$sort, $output, [
             'ShowInMenus' => false,

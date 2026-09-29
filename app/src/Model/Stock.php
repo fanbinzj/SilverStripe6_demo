@@ -9,6 +9,9 @@ use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\HasManyList;
+use SilverStripe\ORM\ManyManyList;
+use SilverStripe\Security\Member;
+use SilverStripe\Security\Security;
 
 /**
  * A US exchange-listed company, keyed by ticker.
@@ -47,6 +50,7 @@ use SilverStripe\ORM\HasManyList;
  * @method HasManyList<CatalystEvent> CatalystEvents()
  * @method HasManyList<MoverEntry> MoverEntries()
  * @method HasManyList<DataIssueReport> DataIssueReports()
+ * @method ManyManyList<Member> Watchers()
  */
 class Stock extends DataObject
 {
@@ -104,6 +108,11 @@ class Stock extends DataObject
         'DataIssueReports' => DataIssueReport::class,
     ];
 
+    // The other side of Member.Watchlist (MemberExtension); no extra table
+    private static array $belongs_many_many = [
+        'Watchers' => Member::class . '.Watchlist',
+    ];
+
     // Deleting a stock deletes its related records
     private static array $cascade_deletes = [
         'Filings',
@@ -145,6 +154,13 @@ class Stock extends DataObject
         'PublicFloat' => 'Public float (USD)',
     ];
 
+    protected function onBeforeDelete()
+    {
+        parent::onBeforeDelete();
+        // Remove the stock from watchlists (join rows only; members are not affected)
+        $this->Watchers()->removeAll();
+    }
+
     public function getTitle(): string
     {
         return $this->Ticker ? "{$this->Ticker}: {$this->Name}" : (string) $this->Name;
@@ -184,6 +200,15 @@ class Stock extends DataObject
     {
         $directory = StockDirectoryPage::get_instance();
         return $directory ? $directory->Link(rawurlencode($this->Ticker) . ($action ? "/{$action}" : '')) : '';
+    }
+
+    /**
+     * Whether the logged-in member has this stock on their watchlist (false when logged out).
+     */
+    public function getIsOnCurrentWatchlist(): bool
+    {
+        $member = Security::getCurrentUser();
+        return $member && $member->isWatching($this);
     }
 
     /**

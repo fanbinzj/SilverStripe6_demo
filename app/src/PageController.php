@@ -2,8 +2,11 @@
 
 namespace {
 
+    use App\Pages\AccountPage;
+    use App\Pages\RegistrationPage;
     use App\Pages\StockDirectoryPage;
     use SilverStripe\CMS\Controllers\ContentController;
+    use SilverStripe\Security\Security;
     use SilverStripe\View\Requirements;
 
     /**
@@ -43,6 +46,24 @@ namespace {
         public function getSearchPage(): ?StockDirectoryPage
         {
             return StockDirectoryPage::get()->first();
+        }
+
+        public function getRegistrationPage(): ?RegistrationPage
+        {
+            return RegistrationPage::get()->first();
+        }
+
+        public function getAccountPage(): ?AccountPage
+        {
+            return AccountPage::get()->first();
+        }
+
+        /**
+         * Logout link with a CSRF token, so another site can't log members out with a plain link.
+         */
+        public function getLogoutURL(): string
+        {
+            return Security::logout_url();
         }
 
         /**
