@@ -49,6 +49,17 @@
             </ul>
         </nav>
 
+        <%-- Account links --%>
+        <nav class="account-nav" aria-label="Account">
+            <% if $CurrentMember %>
+                <% if $AccountPage %><a href="$AccountPage.Link" class="account-nav__link">My watchlist</a><% end_if %>
+                <a href="$LogoutURL" class="account-nav__link">Log out</a>
+            <% else %>
+                <a href="Security/login?BackURL={$Link.URLATT}" class="account-nav__link">Log in</a>
+                <% if $RegistrationPage %><a href="$RegistrationPage.Link" class="account-nav__link account-nav__link--primary">Register</a><% end_if %>
+            <% end_if %>
+        </nav>
+
         <%-- Mobile menu controls --%>
         <button class="hamburger" type="button" aria-label="Toggle menu" data-toggle-mobile-menu>
             <span class="hamburger__lines"></span>

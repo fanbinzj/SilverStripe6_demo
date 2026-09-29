@@ -8,6 +8,7 @@
             <p class="notice" role="note">This company no longer appears in the SEC's list of NASDAQ and NYSE listings.</p>
         <% end_if %>
         <p><a href="$SecFilingsUrl" rel="external noopener">All filings on SEC EDGAR</a></p>
+        <% include WatchlistButton %>
     </header>
 
     <nav class="stock-profile__toc" aria-label="On this page">

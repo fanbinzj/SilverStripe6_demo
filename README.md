@@ -15,12 +15,13 @@ This is an early prototype. It shows publicly available information only (no rat
 | Section | Description |
 |---|---|
 | Today's Movers | Biggest price moves, split into pre-market, market hours and after-hours |
-| Movers Archive | Historical movers lists (may become members-only) |
+| Movers Archive | Historical movers lists; free by default, can be switched to members-only in the CMS |
 | Stock Profile | One page per stock: fundamentals snapshot, dilution history, ownership, company background, key metrics |
 | Dilution Tracker | Feed of new S-1, S-3 and 424B filings with the key numbers extracted |
 | Catalyst Calendar | Earnings dates, FDA dates, lock-up expiries, shareholder meetings |
 | Penny Stock 101 | Short guides: dilution, reverse splits, reading a 424B, pump-and-dump patterns |
 | Ticker search | Search stocks by ticker or company name from the home page |
+| Accounts and watchlist | Free registration; members can keep a watchlist of stocks |
 
 ## Data sources (prototype)
 
@@ -44,8 +45,8 @@ vendor/bin/sake tasks:import-earnings-calendar
 composer serve        # http://localhost:8080, CMS at /admin
 ```
 
-In production the imports run as queued jobs; add `vendor/bin/sake tasks:ProcessJobQueueTask` (and
-`--queue=large`) to cron every minute. See [docs/04](docs/04-data-import.md).
+In production the imports run as queued jobs; `dev/run-job-queue.sh` runs the queue and should be called every
+minute by cron (or launchd on macOS). See [docs/04](docs/04-data-import.md).
 
 ## Roadmap
 
@@ -58,7 +59,7 @@ Each stage focuses on one area of the framework and has accompanying notes in [`
 | 2 | Data model: DataObjects, relations, ModelAdmin | [docs/02](docs/02-data-model.md) |
 | 3 | Stock profiles and search: routing, controllers, forms | [docs/03](docs/03-stock-profiles-and-search.md) |
 | 4 | Data import: SEC EDGAR, Injector-based providers, build tasks, queued jobs | [docs/04](docs/04-data-import.md) |
-| 5 | Members area: permissions and Extensions | TODO |
+| 5 | Members area: permissions, registration, Extensions, many_many | [docs/05](docs/05-members-area.md) |
 | 6 | Front-end: Vue 3 ticker search, accessibility | TODO |
 | 7 | Testing and code quality | TODO |
 | 8 | Performance and debugging: caching, query optimisation | TODO |

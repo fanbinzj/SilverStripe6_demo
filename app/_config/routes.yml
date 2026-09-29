@@ -1,0 +1,9 @@
+---
+Name: app-routes
+After: '#rootroutes'
+---
+# Controllers that are not CMS pages. The "//" separates the URL prefix from the
+# parameters passed to the controller, so /watchlist/add runs WatchlistController::add().
+SilverStripe\Control\Director:
+  rules:
+    'watchlist//$Action': 'App\Controllers\WatchlistController'
