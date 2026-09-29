@@ -7,6 +7,7 @@ use App\Model\NameChange;
 use App\Model\Stock;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;
+use SilverStripe\ORM\Connect\DatabaseException;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBDatetime;
 
@@ -22,6 +23,9 @@ class SecCompanyImporter
     // Offering-related filings older than this are not imported
     private static int $filing_lookback_years = 5;
 
+    // How many times to run the database update when it conflicts with another process
+    private static int $max_transaction_attempts = 3;
+
     public function __construct(
         private readonly SecClient $sec,
     ) {
@@ -29,17 +33,33 @@ class SecCompanyImporter
 
     public function importStock(Stock $stock): void
     {
+        // Fetch once; only the database part is retried
         $submissions = $this->sec->getSubmissions($stock->CIK);
         $facts = $this->sec->getCompanyFacts($stock->CIK);
 
-        DB::get_conn()->withTransaction(function () use ($stock, $submissions, $facts) {
-            if ($submissions) {
-                $this->applySubmissions($stock, $submissions);
+        $attempts = static::config()->get('max_transaction_attempts');
+        for ($attempt = 1; ; $attempt++) {
+            try {
+                DB::get_conn()->withTransaction(function () use ($stock, $submissions, $facts) {
+                    if ($submissions) {
+                        $this->applySubmissions($stock, $submissions);
+                    }
+                    $this->applyFacts($stock, $facts ? new XbrlFacts($facts) : null);
+                    $stock->SecDataImportedAt = DBDatetime::now()->getValue();
+                    $stock->write();
+                });
+                return;
+            } catch (DatabaseException $e) {
+                // Another process (e.g. the quote import) changed the same rows while this transaction
+                // ran. MySQL/MariaDB reject the commit and ask for the transaction to be restarted:
+                // deadlocks (1213) and, with MariaDB's innodb_snapshot_isolation, "record has changed
+                // since last read" (1020). Start again from fresh data.
+                if ($attempt >= $attempts || !str_contains($e->getMessage(), 'try restarting transaction')) {
+                    throw $e;
+                }
+                $stock = Stock::get()->byID($stock->ID);
             }
-            $this->applyFacts($stock, $facts ? new XbrlFacts($facts) : null);
-            $stock->SecDataImportedAt = DBDatetime::now()->getValue();
-            $stock->write();
-        });
+        }
     }
 
     private function applySubmissions(Stock $stock, array $submissions): void
