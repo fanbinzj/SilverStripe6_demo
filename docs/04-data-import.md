@@ -134,11 +134,19 @@ single cron command:
 - **Locking**: a job's `Worker` column acts as a mutex so two workers can't run it at once; stalled jobs are
   detected by the health check once their lock expires.
 
+Running jobs locally: `dev/run-job-queue.sh` processes both queues (the large one in the background). On macOS a
+launchd agent can call it every minute:
+
+```xml
+<!-- ~/Library/LaunchAgents/com.pennymirror.jobqueue.plist (load with: launchctl bootstrap gui/$(id -u) <file>) -->
+<key>ProgramArguments</key><array><string>/path/to/project/dev/run-job-queue.sh</string></array>
+<key>StartInterval</key><integer>60</integer>
+```
+
 Cron in production:
 
 ```
-* * * * * cd /var/www/pennymirror && vendor/bin/sake tasks:ProcessJobQueueTask
-* * * * * cd /var/www/pennymirror && vendor/bin/sake tasks:ProcessJobQueueTask --queue=large
+* * * * * /var/www/pennymirror/dev/run-job-queue.sh
 ```
 
 ## 7. Performance lessons from this stage
@@ -171,6 +179,15 @@ Cron in production:
 - **Uniqueness follows the domain**: the same accession number can belong to two stocks (share classes under one
   CIK, or a filing made jointly by two companies), which broke a unique index on `AccessionNumber`. The index is
   now unique on (`StockID`, `AccessionNumber`).
+- **Write conflicts: retry the transaction**: MariaDB (11.8+) enables `innodb_snapshot_isolation`. When the SEC
+  import's transaction had read a stock and the quote import updated the same row and committed first, the commit
+  failed with "Record has changed since last read in table 'stock'; try restarting transaction" (error 1020;
+  deadlocks, 1213, say the same). `SecCompanyImporter` now fetches from the SEC once, then runs the database part up
+  to `max_transaction_attempts` times, reloading the stock each time. The conflict was reproduced on demand with a
+  temporary `onBeforeWrite` extension that updates the row through a second connection mid-transaction.
+- **Flush after adding config**: the first retry test still failed. The new `max_transaction_attempts` config was
+  not in the cached config manifest yet, so it read as `null`, `1 >= null` was true, and the code gave up after one
+  attempt. A deploy must always flush (e.g. `sake db:build --flush`); bugs like this only appear on the error path.
 - **Fetch before you delete**: `EarningsImporter` fetches every date first and only then replaces events inside a
   transaction, so a failed request leaves the existing data intact.
 
